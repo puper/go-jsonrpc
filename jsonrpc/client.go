@@ -6,28 +6,31 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type Client struct {
 	Url string
-	id int
+	id  int
+	c   *http.Client
 }
 
 type Response struct {
-	Id int `json:"id"`
-	Result interface{} `json:"result"`
-	Error *ResponseError `json:"error"`
+	Id     int            `json:"id"`
+	Result interface{}    `json:"result"`
+	Error  *ResponseError `json:"error"`
 }
 
 type ResponseError struct {
-	Code int `json:"code"`
-	Message string `json:"message"`
-	Data interface{} `json:"data"`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
 func NewClient(url string) *Client {
 	client := new(Client)
 	client.Url = url
+	client.c = &http.Client{}
 	return client
 }
 
@@ -45,7 +48,8 @@ func (c *Client) Call(method string, params interface{}) (*Response, error) {
 		return nil, err
 	}
 	buf := bytes.NewBuffer(data)
-	resp, err := http.Post(c.Url, "application/json", buf)
+	c.c.Timeout = timeout
+	resp, err := c.c.Post(c.Url, "application/json", buf)
 
 	if err != nil {
 		return nil, err
