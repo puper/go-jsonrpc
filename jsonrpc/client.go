@@ -35,6 +35,10 @@ func NewClient(url string) *Client {
 }
 
 func (c *Client) Call(method string, params interface{}) (*Response, error) {
+	return c.CallTimeout(method, params, 0)
+}
+
+func (c *Client) CallTimeout(method string, params interface{}, timeout time.Duration) (*Response, error) {
 	var payload = map[string]interface{}{
 		"jsonrpc": "2.0",
 		"method":  method,
